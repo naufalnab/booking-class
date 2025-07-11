@@ -115,6 +115,7 @@ function initializeDynamicContent() {
   populateMajelis();
   populateRooms();
   populateSarana();
+  attachRecurringEventListeners();
 }
 
 // Populate country codes dropdown
@@ -170,9 +171,30 @@ function populateRooms() {
 // Populate sarana pendukung
 function populateSarana() {
   const checkboxGroup = document.querySelector(".checkbox-group");
+  console.log("Checkbox group element:", checkboxGroup);
+  
+  if (!checkboxGroup) {
+    console.error("Checkbox group not found!");
+    return;
+  }
+  
+  // Check if already populated (fallback HTML exists)
+  const existingItems = checkboxGroup.querySelectorAll('.checkbox-item');
+  if (existingItems.length > 0) {
+    console.log("Sarana already populated with", existingItems.length, "items");
+    // Just attach event listeners
+    attachCheckboxEventListeners();
+    return;
+  }
+  
+  // Clear existing content
   checkboxGroup.innerHTML = "";
   
-  saranaList.forEach(sarana => {
+  console.log("Populating sarana with", saranaList.length, "items");
+  
+  saranaList.forEach((sarana, index) => {
+    console.log(`Adding sarana ${index + 1}:`, sarana);
+    
     const checkboxItem = document.createElement("div");
     checkboxItem.className = "checkbox-item";
     checkboxItem.innerHTML = `
@@ -181,6 +203,8 @@ function populateSarana() {
     `;
     checkboxGroup.appendChild(checkboxItem);
   });
+  
+  console.log("Sarana populated. Total items:", checkboxGroup.children.length);
   
   // Re-attach event listeners for checkboxes
   attachCheckboxEventListeners();
@@ -216,6 +240,24 @@ function attachCheckboxEventListeners() {
   });
 }
 
+// Attach recurring event listeners
+function attachRecurringEventListeners() {
+  // Add event listeners for recurring options
+  const recurringElements = ["recurringInterval", "recurringDuration", "recurringDurationUnit", "recurringEndDate"];
+  recurringElements.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.addEventListener("change", updateRecurringPreview);
+    }
+  });
+
+  // Add event listeners for weekly days
+  const weeklyDayCheckboxes = document.querySelectorAll('input[name="recurringDays"]');
+  weeklyDayCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener("change", updateRecurringPreview);
+  });
+}
+
 // Theme toggle function
 function toggleTheme() {
   const currentTheme = document.documentElement.getAttribute("data-theme");
@@ -234,13 +276,28 @@ document.documentElement.setAttribute("data-theme", "light");
 
 // Load saved theme preference and initialize content
 window.addEventListener("load", function () {
-  const savedTheme = localStorage.getItem("theme") || "light"; // Default to light if no saved preference
+  console.log("Window loaded");
+  
+  const savedTheme = localStorage.getItem("theme") || "light";
   document.documentElement.setAttribute("data-theme", savedTheme);
   const themeText = document.getElementById("theme-text");
   themeText.textContent = savedTheme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
   
-  // Initialize dynamic content
-  initializeDynamicContent();
+  // Initialize dynamic content with delay to ensure DOM is ready
+  setTimeout(() => {
+    console.log("Initializing dynamic content...");
+    initializeDynamicContent();
+    
+    // Double check sarana population
+    setTimeout(() => {
+      const saranaCount = document.querySelectorAll('.checkbox-item').length;
+      console.log("Final sarana count:", saranaCount);
+      if (saranaCount === 0) {
+        console.error("Sarana still not populated, trying manual population...");
+        populateSarana();
+      }
+    }, 200);
+  }, 100);
 });
 
 // DOM elements
@@ -251,12 +308,15 @@ const totalBookingsEl = document.getElementById("totalBookings");
 const todayBookingsEl = document.getElementById("todayBookings");
 const tanggalMulaiInput = document.getElementById("tanggalMulai");
 const tanggalSelesaiInput = document.getElementById("tanggalSelesai");
-const isRecurringCheckbox = document.getElementById("isRecurring");
+const isRecurringInput = document.getElementById("isRecurring");
 const recurringOptions = document.getElementById("recurringOptions");
 const recurringTypeSelect = document.getElementById("recurringType");
 const weeklyOptions = document.getElementById("weeklyOptions");
 const intervalLabel = document.getElementById("intervalLabel");
 const previewText = document.getElementById("previewText");
+const datetimeSection = document.getElementById("datetimeSection");
+const singleBookingBtn = document.getElementById("singleBookingBtn");
+const recurringBookingBtn = document.getElementById("recurringBookingBtn");
 
 // Set minimum date to today
 const today = new Date();
@@ -275,11 +335,72 @@ tanggalMulaiInput.addEventListener("change", function () {
   updateRecurringPreview();
 });
 
-// Recurring booking event listeners
-isRecurringCheckbox.addEventListener("change", function () {
-  recurringOptions.style.display = this.checked ? "block" : "none";
+// Booking type selector event listeners
+singleBookingBtn.addEventListener("click", function() {
+  // Update UI
+  singleBookingBtn.classList.add("active");
+  recurringBookingBtn.classList.remove("active");
+  
+  // Update form state
+  isRecurringInput.value = "off";
+  recurringOptions.style.display = "none";
+  datetimeSection.style.display = "block";
+  
+  // Update required attributes
+  updateRequiredAttributes(false);
+  
   updateRecurringPreview();
 });
+
+recurringBookingBtn.addEventListener("click", function() {
+  // Update UI
+  recurringBookingBtn.classList.add("active");
+  singleBookingBtn.classList.remove("active");
+  
+  // Update form state
+  isRecurringInput.value = "on";
+  recurringOptions.style.display = "block";
+  datetimeSection.style.display = "none";
+  
+  // Update required attributes
+  updateRequiredAttributes(true);
+  
+  updateRecurringPreview();
+});
+
+// Function to update required attributes
+function updateRequiredAttributes(isRecurring) {
+  const normalDateTimeInputs = [tanggalMulaiInput, tanggalSelesaiInput, 
+                                document.getElementById("waktuMulai"), 
+                                document.getElementById("waktuSelesai")];
+  
+  const recurringDateTimeInputs = [document.getElementById("recurringStartDate"),
+                                   document.getElementById("recurringEndDate"),
+                                   document.getElementById("recurringStartTime"),
+                                   document.getElementById("recurringEndTime")];
+  
+  if (isRecurring) {
+    // Remove required from normal inputs
+    normalDateTimeInputs.forEach(input => {
+      if (input) input.removeAttribute("required");
+    });
+    
+    // Add required to recurring inputs
+    recurringDateTimeInputs.forEach(input => {
+      if (input) input.setAttribute("required", "required");
+    });
+  } else {
+    // Add required to normal inputs
+    normalDateTimeInputs.forEach(input => {
+      if (input) input.setAttribute("required", "required");
+    });
+    
+    // Remove required from recurring inputs
+    recurringDateTimeInputs.forEach(input => {
+      if (input) input.removeAttribute("required");
+    });
+  }
+}
 
 recurringTypeSelect.addEventListener("change", function () {
   weeklyOptions.style.display = this.value === "weekly" ? "block" : "none";
@@ -295,16 +416,6 @@ recurringTypeSelect.addEventListener("change", function () {
   updateRecurringPreview();
 });
 
-// Add event listeners for recurring options
-["recurringInterval", "recurringDuration", "recurringDurationUnit", "recurringEndDate"].forEach(id => {
-  document.getElementById(id).addEventListener("change", updateRecurringPreview);
-});
-
-// Add event listeners for weekly days
-document.querySelectorAll('input[name="recurringDays"]').forEach(checkbox => {
-  checkbox.addEventListener("change", updateRecurringPreview);
-});
-
 // Update recurring preview
 function updateRecurringPreview() {
   if (!isRecurringCheckbox.checked) {
@@ -312,16 +423,17 @@ function updateRecurringPreview() {
     return;
   }
 
-  const startDate = tanggalMulaiInput.value;
-  const startTime = document.getElementById("waktuMulai").value;
-  const endTime = document.getElementById("waktuSelesai").value;
+  const startDate = document.getElementById("recurringStartDate").value;
+  const endDate = document.getElementById("recurringEndDate").value;
+  const startTime = document.getElementById("recurringStartTime").value;
+  const endTime = document.getElementById("recurringEndTime").value;
   const type = recurringTypeSelect.value;
   const interval = document.getElementById("recurringInterval").value;
   const duration = document.getElementById("recurringDuration").value;
   const durationUnit = document.getElementById("recurringDurationUnit").value;
-  const endDate = document.getElementById("recurringEndDate").value;
+  const recurringEndDate = document.getElementById("recurringEndDate").value;
 
-  if (!startDate || !startTime || !endTime) {
+  if (!startDate || !endDate || !startTime || !endTime) {
     previewText.textContent = "Lengkapi tanggal dan waktu untuk melihat preview";
     return;
   }
@@ -346,8 +458,8 @@ function updateRecurringPreview() {
     preview = `Setiap ${interval} bulan pada tanggal ${dayOfMonth} jam ${startTime} - ${endTime}`;
   }
 
-  if (endDate) {
-    preview += ` sampai ${formatDate(endDate)}`;
+  if (recurringEndDate) {
+    preview += ` sampai ${formatDate(recurringEndDate)}`;
   } else {
     preview += ` selama ${duration} ${durationUnit === "weeks" ? "minggu" : "bulan"}`;
   }
@@ -858,11 +970,25 @@ function showAlert(message, type) {
 
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", function () {
-  // Initialize dynamic content if not already done
-  if (!document.querySelector(".room-card")) {
-    initializeDynamicContent();
-  }
+  console.log("DOM loaded, initializing...");
+  
+  // Check if elements exist
+  const checkboxGroup = document.querySelector(".checkbox-group");
+  console.log("Checkbox group found:", !!checkboxGroup);
+  
+  // Initialize dynamic content
+  initializeDynamicContent();
   
   renderBookings();
   updateStats();
+  
+  // Ensure checkbox event listeners are attached
+  setTimeout(() => {
+    const saranaItems = document.querySelectorAll('.checkbox-item');
+    console.log("Sarana items found after init:", saranaItems.length);
+    if (saranaItems.length > 0) {
+      console.log("Attaching checkbox event listeners...");
+      attachCheckboxEventListeners();
+    }
+  }, 100);
 });

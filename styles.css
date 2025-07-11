@@ -301,26 +301,36 @@ body {
   align-items: center;
   gap: 10px;
   padding: 10px;
-  background: white;
-  border: 2px solid #e9ecef;
+  background: var(--card-bg);
+  border: 2px solid var(--form-border);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
+  color: var(--text-primary);
 }
 
 .checkbox-item:hover {
-  background: #f8f9fa;
-  border-color: #4facfe;
+  background: var(--card-hover);
+  border-color: var(--accent-color);
 }
 
 .checkbox-item input[type="checkbox"] {
   width: auto;
   margin: 0;
+  cursor: pointer;
+}
+
+.checkbox-item label {
+  cursor: pointer;
+  margin: 0;
+  font-weight: 500;
+  flex: 1;
 }
 
 .checkbox-item.checked {
-  background: #e3f2fd;
-  border-color: #4facfe;
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
 }
 
 .btn {
@@ -482,21 +492,131 @@ body {
   box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
 }
 
-.recurring-btn {
-  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 15px;
-  font-size: 0.9em;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.booking-type-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 10px;
 }
 
-.recurring-btn:hover {
+.booking-type-btn {
+  background: var(--card-bg);
+  border: 2px solid var(--card-border);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  position: relative;
+  overflow: hidden;
+  min-height: 80px;
+}
+
+.booking-type-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(160, 137, 107, 0.1),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.booking-type-btn:hover::before {
+  left: 100%;
+}
+
+.booking-type-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px var(--shadow-color);
+  border-color: var(--accent-color);
+}
+
+.booking-type-btn.active {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 6px 20px var(--btn-shadow);
+}
+
+.booking-type-btn.active .booking-type-icon {
+  transform: scale(1.1);
+}
+
+.booking-type-icon {
+  font-size: 2.5em;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+.booking-type-text {
+  flex: 1;
+}
+
+.booking-type-text strong {
+  display: block;
+  font-size: 1.1em;
+  margin-bottom: 5px;
+  color: inherit;
+}
+
+.booking-type-text small {
+  display: block;
+  opacity: 0.8;
+  font-size: 0.9em;
+  color: inherit;
+}
+
+.booking-type-btn:not(.active) .booking-type-text strong {
+  color: var(--text-primary);
+}
+
+.booking-type-btn:not(.active) .booking-type-text small {
+  color: var(--text-secondary);
+}
+
+.recurring-header {
+  border-bottom: 2px solid var(--form-border);
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+.recurring-header h3 {
+  background: linear-gradient(135deg, var(--accent-color), var(--text-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 1.3em;
+}
+
+@media (max-width: 768px) {
+  .booking-type-selector {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .booking-type-btn {
+    padding: 15px;
+    min-height: 70px;
+  }
+  
+  .booking-type-icon {
+    font-size: 2em;
+  }
+  
+  .booking-type-text strong {
+    font-size: 1em;
+  }
 }
 
 .alert {
