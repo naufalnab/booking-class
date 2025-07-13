@@ -1097,6 +1097,12 @@
               <p>Calendar View</p>
             </a>
           </div>
+          <div class="stat-card">
+            <button onclick="clearAllData()" style="background: none; border: none; color: inherit; cursor: pointer; width: 100%;">
+              <h3 style="font-size: 1.5em; color: #dc3545;">🗑️</h3>
+              <p>Clear Data</p>
+            </button>
+          </div>
         </div>
 
         <div id="bookingsList"></div>
@@ -1110,6 +1116,89 @@
     let selectedRoom = "";
     let selectedSarana = [];
 
+    // Generate dummy data
+    function generateDummyData() {
+      const today = new Date();
+      const dummyBookings = [];
+      
+      // Generate bookings for the next 30 days
+      for (let i = 0; i < 50; i++) {
+        const randomDays = Math.floor(Math.random() * 30) - 15; // -15 to +15 days from today
+        const bookingDate = new Date(today);
+        bookingDate.setDate(bookingDate.getDate() + randomDays);
+        
+        const startHour = Math.floor(Math.random() * 8) + 8; // 8-15 (8 AM - 3 PM)
+        const duration = Math.floor(Math.random() * 4) + 1; // 1-4 hours
+        const endHour = startHour + duration;
+        
+        const names = [
+          "Ahmad Rahman", "Siti Nurhaliza", "Budi Santoso", "Dewi Lestari", 
+          "Eko Prasetyo", "Fitri Handayani", "Gunawan Wijaya", "Hana Pratiwi",
+          "Indra Kusuma", "Joko Widodo", "Kartini Sari", "Lukman Hakim",
+          "Maya Sari", "Nanda Pratama", "Octavia Putri", "Putra Ramadhan",
+          "Qori Zahra", "Rizki Ananda", "Sari Dewi", "Tono Hartono",
+          "Umar Farid", "Vina Sari", "Wahyu Pratama", "Xenia Putri", "Yudi Santoso"
+        ];
+        
+        const agendas = [
+          "Rapat Koordinasi Bulanan", "Pelatihan Karyawan", "Seminar Pendidikan",
+          "Workshop Kreativitas", "Diskusi Kelompok", "Presentasi Proyek",
+          "Rapat Evaluasi", "Pelatihan Teknologi", "Sosialisasi Program",
+          "Rapat Anggaran", "Pelatihan Leadership", "Workshop Design Thinking",
+          "Rapat Strategis", "Pelatihan Digital Marketing", "Seminar Kewirausahaan",
+          "Diskusi Kebijakan", "Pelatihan Manajemen", "Workshop Inovasi",
+          "Rapat Tim", "Pelatihan Soft Skills", "Seminar Motivasi",
+          "Diskusi Komunitas", "Pelatihan Teknis", "Workshop Produktivitas"
+        ];
+        
+        const roomIds = ["ruang-a", "ruang-b", "ruang-c", "common-1", "common-2"];
+        const majelisIds = ["majelis-pendidikan", "majelis-peduli"];
+        const approvalStatuses = ["pending", "approved"];
+        const saranaOptions = ["TV", "Papan Tulis", "Proyektor", "Sound System", "WiFi", "AC", "Flipchart", "Konsumsi"];
+        
+        const randomSarana = [];
+        const saranaCount = Math.floor(Math.random() * 4) + 1;
+        for (let j = 0; j < saranaCount; j++) {
+          const randomSaranaItem = saranaOptions[Math.floor(Math.random() * saranaOptions.length)];
+          if (!randomSarana.includes(randomSaranaItem)) {
+            randomSarana.push(randomSaranaItem);
+          }
+        }
+        
+        const saranaLainnyaOptions = ["", "Dekorasi", "Snack Tambahan", "Alat Tulis", "Kamera", "Tripod", "Extension", ""];
+        
+        const phoneNumbers = [
+          "81234567890", "81234567891", "81234567892", "81234567893", "81234567894",
+          "85234567890", "85234567891", "85234567892", "85234567893", "85234567894",
+          "87734567890", "87734567891", "87734567892", "87734567893", "87734567894"
+        ];
+        
+        dummyBookings.push({
+          id: Date.now() + i,
+          nama: names[Math.floor(Math.random() * names.length)],
+          majelis: majelisIds[Math.floor(Math.random() * majelisIds.length)],
+          phone: "+62" + phoneNumbers[Math.floor(Math.random() * phoneNumbers.length)],
+          tanggalMulai: bookingDate.toISOString().split('T')[0],
+          tanggalSelesai: bookingDate.toISOString().split('T')[0],
+          waktuMulai: `${startHour.toString().padStart(2, '0')}:00`,
+          waktuSelesai: `${endHour.toString().padStart(2, '0')}:00`,
+          ruangan: roomIds[Math.floor(Math.random() * roomIds.length)],
+          saranaPendukung: randomSarana,
+          saranaLainnya: saranaLainnyaOptions[Math.floor(Math.random() * saranaLainnyaOptions.length)],
+          agenda: agendas[Math.floor(Math.random() * agendas.length)],
+          isRecurring: false,
+          approvalStatus: approvalStatuses[Math.floor(Math.random() * approvalStatuses.length)],
+          createdAt: new Date(Date.now() - Math.floor(Math.random() * 10) * 24 * 60 * 60 * 1000).toISOString(),
+          ...(Math.random() > 0.7 && {
+            approvedBy: "Admin " + ["Sistem", "Koordinator", "Manager"][Math.floor(Math.random() * 3)],
+            approvedAt: new Date().toISOString()
+          })
+        });
+      }
+      
+      return dummyBookings;
+    }
+
     // Initialize app
     function initializeApp() {
       // Set default theme
@@ -1122,6 +1211,12 @@
       document.getElementById("tanggalSelesai").min = todayStr;
       document.getElementById("tanggalMulai").value = todayStr;
       document.getElementById("tanggalSelesai").value = todayStr;
+
+      // Generate dummy data if no existing data
+      if (bookings.length === 0) {
+        bookings = generateDummyData();
+        saveBookings();
+      }
 
       // Attach event listeners
       attachEventListeners();
@@ -1488,6 +1583,38 @@
           popup.remove();
         }, 300);
       }
+    }
+
+    // Clear all data
+    function clearAllData() {
+      showPopup(
+        "Apakah Anda yakin ingin menghapus semua data booking? Tindakan ini tidak dapat dibatalkan.",
+        "error",
+        "Hapus Semua Data"
+      );
+      
+      const popup = document.querySelector('.popup-modal');
+      const buttonContainer = popup.querySelector('.popup-button').parentElement;
+      buttonContainer.innerHTML = `
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <button class="popup-button error" onclick="confirmClearAll()">
+            Ya, Hapus Semua
+          </button>
+          <button class="popup-button" onclick="closePopup()">
+            Batal
+          </button>
+        </div>
+      `;
+    }
+
+    // Confirm clear all data
+    function confirmClearAll() {
+      bookings = [];
+      saveBookings();
+      renderBookings();
+      updateStats();
+      closePopup();
+      showPopup("Semua data booking berhasil dihapus!", "success", "Data Dihapus!");
     }
 
     // Save bookings to localStorage

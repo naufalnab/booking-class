@@ -645,7 +645,17 @@
       opacity: 0.5;
     }
 
-    @media (max-width: 768px) {
+          @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      
+      @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+      }
+
+      @media (max-width: 768px) {
       .controls {
         flex-direction: column;
         align-items: stretch;
@@ -897,6 +907,119 @@
       "majelis-peduli": "Majelis Peduli"
     };
 
+    // Generate comprehensive dummy data
+    function generateDummyData() {
+      const today = new Date();
+      const dummyBookings = [];
+      
+      // Generate bookings for the past 15 days to future 45 days (60 days total)
+      for (let i = 0; i < 100; i++) {
+        const randomDays = Math.floor(Math.random() * 60) - 15; // -15 to +45 days from today
+        const bookingDate = new Date(today);
+        bookingDate.setDate(bookingDate.getDate() + randomDays);
+        
+        const startHour = Math.floor(Math.random() * 10) + 7; // 7-16 (7 AM - 4 PM)
+        const duration = Math.floor(Math.random() * 5) + 1; // 1-5 hours
+        const endHour = Math.min(startHour + duration, 18); // Max until 6 PM
+        
+        const names = [
+          "Ahmad Rahman", "Siti Nurhaliza", "Budi Santoso", "Dewi Lestari", 
+          "Eko Prasetyo", "Fitri Handayani", "Gunawan Wijaya", "Hana Pratiwi",
+          "Indra Kusuma", "Joko Widodo", "Kartini Sari", "Lukman Hakim",
+          "Maya Sari", "Nanda Pratama", "Octavia Putri", "Putra Ramadhan",
+          "Qori Zahra", "Rizki Ananda", "Sari Dewi", "Tono Hartono",
+          "Umar Farid", "Vina Sari", "Wahyu Pratama", "Xenia Putri", "Yudi Santoso",
+          "Zainal Abidin", "Ani Susanti", "Bambang Suryono", "Citra Kirana",
+          "Dedi Mulyadi", "Erni Wahyuni", "Faisal Basri", "Gina Puspita",
+          "Hardi Priyono", "Ika Sari", "Jihan Aulia", "Koko Priyanto",
+          "Lina Marlina", "Mira Handayani", "Neni Anggraeni", "Oni Suryani"
+        ];
+        
+        const agendas = [
+          "Rapat Koordinasi Bulanan", "Pelatihan Karyawan", "Seminar Pendidikan",
+          "Workshop Kreativitas", "Diskusi Kelompok", "Presentasi Proyek",
+          "Rapat Evaluasi", "Pelatihan Teknologi", "Sosialisasi Program",
+          "Rapat Anggaran", "Pelatihan Leadership", "Workshop Design Thinking",
+          "Rapat Strategis", "Pelatihan Digital Marketing", "Seminar Kewirausahaan",
+          "Diskusi Kebijakan", "Pelatihan Manajemen", "Workshop Inovasi",
+          "Rapat Tim", "Pelatihan Soft Skills", "Seminar Motivasi",
+          "Diskusi Komunitas", "Pelatihan Teknis", "Workshop Produktivitas",
+          "Rapat Mingguan", "Pelatihan Komunikasi", "Seminar Finansial",
+          "Workshop Strategi", "Rapat Koordinasi", "Pelatihan Kepemimpinan",
+          "Seminar Bisnis", "Diskusi Inovasi", "Pelatihan Team Building",
+          "Workshop Manajemen", "Rapat Evaluasi Kinerja", "Pelatihan Public Speaking",
+          "Seminar Pengembangan Diri", "Workshop Problem Solving", "Rapat Strategi Bisnis",
+          "Pelatihan Customer Service", "Seminar Teknologi Terbaru", "Workshop Kreativitas Tim",
+          "Rapat Perencanaan", "Pelatihan Sales", "Seminar Pemasaran Digital",
+          "Workshop Inovasi Produk", "Rapat Koordinasi Proyek", "Pelatihan Quality Control"
+        ];
+        
+        const roomIds = ["ruang-a", "ruang-b", "ruang-c", "common-1", "common-2"];
+        const majelisIds = ["majelis-pendidikan", "majelis-peduli"];
+        const approvalStatuses = ["pending", "approved"];
+        const saranaOptions = ["TV", "Papan Tulis", "Proyektor", "Sound System", "WiFi", "AC", "Flipchart", "Konsumsi"];
+        
+        const randomSarana = [];
+        const saranaCount = Math.floor(Math.random() * 5) + 1;
+        for (let j = 0; j < saranaCount; j++) {
+          const randomSaranaItem = saranaOptions[Math.floor(Math.random() * saranaOptions.length)];
+          if (!randomSarana.includes(randomSaranaItem)) {
+            randomSarana.push(randomSaranaItem);
+          }
+        }
+        
+        const saranaLainnyaOptions = [
+          "", "Dekorasi", "Snack Tambahan", "Alat Tulis", "Kamera", "Tripod", 
+          "Extension", "Microphone Wireless", "Laser Pointer", "Remote Presenter",
+          "Notebook", "Tablet", "Printer", "Scanner", "Laminator", ""
+        ];
+        
+        const phoneNumbers = [
+          "81234567890", "81234567891", "81234567892", "81234567893", "81234567894",
+          "85234567890", "85234567891", "85234567892", "85234567893", "85234567894",
+          "87734567890", "87734567891", "87734567892", "87734567893", "87734567894",
+          "89934567890", "89934567891", "89934567892", "89934567893", "89934567894"
+        ];
+        
+        // Create booking date range (some bookings span multiple days)
+        const isMultiDay = Math.random() > 0.8; // 20% chance of multi-day booking
+        const endDate = new Date(bookingDate);
+        if (isMultiDay) {
+          endDate.setDate(endDate.getDate() + Math.floor(Math.random() * 3) + 1); // 1-3 days
+        }
+        
+        const createdDaysAgo = Math.floor(Math.random() * 30) + 1; // 1-30 days ago
+        const createdDate = new Date(bookingDate);
+        createdDate.setDate(createdDate.getDate() - createdDaysAgo);
+        
+        const approvalStatus = approvalStatuses[Math.floor(Math.random() * approvalStatuses.length)];
+        
+        dummyBookings.push({
+          id: Date.now() + i + Math.floor(Math.random() * 1000),
+          nama: names[Math.floor(Math.random() * names.length)],
+          majelis: majelisIds[Math.floor(Math.random() * majelisIds.length)],
+          phone: "+62" + phoneNumbers[Math.floor(Math.random() * phoneNumbers.length)],
+          tanggalMulai: bookingDate.toISOString().split('T')[0],
+          tanggalSelesai: endDate.toISOString().split('T')[0],
+          waktuMulai: `${startHour.toString().padStart(2, '0')}:${Math.floor(Math.random() * 2) * 30 === 0 ? '00' : '30'}`,
+          waktuSelesai: `${endHour.toString().padStart(2, '0')}:${Math.floor(Math.random() * 2) * 30 === 0 ? '00' : '30'}`,
+          ruangan: roomIds[Math.floor(Math.random() * roomIds.length)],
+          saranaPendukung: randomSarana,
+          saranaLainnya: saranaLainnyaOptions[Math.floor(Math.random() * saranaLainnyaOptions.length)],
+          agenda: agendas[Math.floor(Math.random() * agendas.length)],
+          isRecurring: Math.random() > 0.9, // 10% chance of recurring
+          approvalStatus: approvalStatus,
+          createdAt: createdDate.toISOString(),
+          ...(approvalStatus === 'approved' && {
+            approvedBy: "Admin " + ["Sistem", "Koordinator", "Manager", "Supervisor"][Math.floor(Math.random() * 4)],
+            approvedAt: new Date(createdDate.getTime() + Math.floor(Math.random() * 24 * 60 * 60 * 1000)).toISOString()
+          })
+        });
+      }
+      
+      return dummyBookings;
+    }
+
     // Initialize app
     function initializeApp() {
       // Load bookings from localStorage if available
@@ -904,7 +1027,9 @@
       if (savedBookings) {
         bookings = JSON.parse(savedBookings);
       } else {
-        bookings = sampleBookings;
+        // Generate dummy data if no saved data
+        bookings = generateDummyData();
+        localStorage.setItem('bookings', JSON.stringify(bookings));
       }
 
       // Set default theme
@@ -1166,6 +1291,36 @@
       overlay.addEventListener('click', (e) => {
         if (e.target === overlay) closePopup();
       });
+    }
+
+    // Refresh data
+    function refreshData() {
+      bookings = generateDummyData();
+      localStorage.setItem('bookings', JSON.stringify(bookings));
+      renderCalendar();
+      
+      // Show notification
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--booking-approved);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 1000;
+        font-weight: 600;
+        animation: slideIn 0.3s ease;
+      `;
+      notification.innerHTML = '✅ Data berhasil direfresh!';
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+      }, 2000);
     }
 
     // Close popup
