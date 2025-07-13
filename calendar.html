@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendar View - Booking Ruangan</title>
+  <style>
+    :root {
+      /* Light mode colors */
+      --bg-gradient: linear-gradient(
+        135deg,
+        #8b7355 0%,
+        #a0896b 50%,
+        #d4c4a8 100%
+      );
+      --container-bg: white;
+      --header-gradient: linear-gradient(135deg, #8b7355 0%, #a0896b 100%);
+      --form-bg: #f5f1ec;
+      --form-border: #e8ddd4;
+      --text-primary: #5d4e37;
+      --text-secondary: #8b7355;
+      --card-bg: white;
+      --card-border: #e8ddd4;
+      --card-hover: #f5f1ec;
+      --btn-gradient: linear-gradient(135deg, #8b7355 0%, #a0896b 100%);
+      --btn-shadow: rgba(139, 115, 85, 0.4);
+      --accent-color: #a0896b;
+      --success-bg: #e8f5e8;
+      --success-text: #2d5016;
+      --error-bg: #f8e8e8;
+      --error-text: #721c24;
+      --shadow-color: rgba(139, 115, 85, 0.15);
+      --calendar-grid: #f8f9fa;
+      --calendar-border: #dee2e6;
+      --booking-active: #28a745;
+      --booking-upcoming: #ffc107;
+      --booking-past: #6c757d;
+      --booking-pending: #fd7e14;
+      --booking-approved: #20c997;
+    }
+
+    [data-theme="dark"] {
+      /* Dark mode colors */
+      --bg-gradient: linear-gradient(
+        135deg,
+        #1a1a1a 0%,
+        #2d2d2d 50%,
+        #3a3a3a 100%
+      );
+      --container-bg: #2d2d2d;
+      --header-gradient: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
+      --form-bg: #3a3a3a;
+      --form-border: #4a4a4a;
+      --text-primary: #e0e0e0;
+      --text-secondary: #b0b0b0;
+      --card-bg: #404040;
+      --card-border: #555555;
+      --card-hover: #4a4a4a;
+      --btn-gradient: linear-gradient(135deg, #555555 0%, #666666 100%);
+      --btn-shadow: rgba(0, 0, 0, 0.4);
+      --accent-color: #8b7355;
+      --success-bg: #2d4a2d;
+      --success-text: #90ee90;
+      --error-bg: #4a2d2d;
+      --error-text: #ff6b6b;
+      --shadow-color: rgba(0, 0, 0, 0.3);
+      --calendar-grid: #404040;
+      --calendar-border: #555555;
+      --booking-active: #28a745;
+      --booking-upcoming: #ffc107;
+      --booking-past: #6c757d;
+      --booking-pending: #fd7e14;
+      --booking-approved: #20c997;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: var(--container-bg);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px var(--shadow-color);
+      overflow: hidden;
+      animation: slideUp 0.8s ease-out;
+      transition: all 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header {
+      background: var(--header-gradient);
+      color: white;
+      padding: 30px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" patternUnits="userSpaceOnUse" width="100" height="100"><circle cx="50" cy="50" r="30" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+      opacity: 0.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 10;
+      color: white;
+      font-size: 0.9em;
+      font-weight: 500;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 10;
+      color: white;
+      font-size: 0.9em;
+      font-weight: 500;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 1;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .header p {
+      font-size: 1.2em;
+      opacity: 0.9;
+      position: relative;
+      z-index: 1;
+      font-weight: 300;
+    }
+
+    .controls {
+      padding: 30px;
+      background: var(--form-bg);
+      border-bottom: 2px solid var(--form-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .view-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .view-btn {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 25px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9em;
+      font-weight: 600;
+      color: var(--text-primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .view-btn:hover {
+      background: var(--card-hover);
+      border-color: var(--accent-color);
+      transform: translateY(-2px);
+    }
+
+    .view-btn.active {
+      background: var(--btn-gradient);
+      color: white;
+      border-color: var(--accent-color);
+    }
+
+    .date-navigation {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .nav-btn {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2em;
+      color: var(--text-primary);
+    }
+
+    .nav-btn:hover {
+      background: var(--accent-color);
+      color: white;
+      transform: scale(1.1);
+    }
+
+    .current-period {
+      font-size: 1.3em;
+      font-weight: 700;
+      color: var(--text-primary);
+      min-width: 200px;
+      text-align: center;
+    }
+
+    .today-btn {
+      background: var(--btn-gradient);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 0.9em;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .today-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px var(--btn-shadow);
+    }
+
+    .calendar-container {
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 0;
+      border: 2px solid var(--calendar-border);
+      border-radius: 15px;
+      overflow: hidden;
+      background: var(--calendar-grid);
+      min-height: 600px;
+    }
+
+    .rooms-header {
+      background: var(--header-gradient);
+      color: white;
+      padding: 15px;
+      font-weight: 700;
+      text-align: center;
+      font-size: 1.1em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 2px solid var(--calendar-border);
+    }
+
+    .dates-header {
+      display: flex;
+      background: var(--header-gradient);
+      color: white;
+      border-bottom: 2px solid var(--calendar-border);
+      overflow-x: auto;
+    }
+
+    .date-cell {
+      min-width: 120px;
+      padding: 15px 10px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.9em;
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
+      white-space: nowrap;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .date-cell:last-child {
+      border-right: none;
+    }
+
+    .date-cell.today {
+      background: rgba(255, 255, 255, 0.2);
+      font-weight: 700;
+    }
+
+    .rooms-column {
+      display: flex;
+      flex-direction: column;
+      border-right: 2px solid var(--calendar-border);
+    }
+
+    .room-row {
+      padding: 20px 15px;
+      border-bottom: 1px solid var(--calendar-border);
+      background: var(--card-bg);
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 80px;
+    }
+
+    .room-row:hover {
+      background: var(--card-hover);
+    }
+
+    .room-row:last-child {
+      border-bottom: none;
+    }
+
+    .room-icon {
+      font-size: 1.2em;
+      opacity: 0.8;
+    }
+
+    .room-info {
+      flex: 1;
+    }
+
+    .room-name {
+      font-size: 1em;
+      margin-bottom: 4px;
+    }
+
+    .room-capacity {
+      font-size: 0.8em;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .calendar-body {
+      display: flex;
+      flex-direction: column;
+      overflow-x: auto;
+    }
+
+    .calendar-row {
+      display: flex;
+      border-bottom: 1px solid var(--calendar-border);
+      min-height: 80px;
+    }
+
+    .calendar-row:last-child {
+      border-bottom: none;
+    }
+
+    .calendar-cell {
+      min-width: 120px;
+      padding: 8px;
+      border-right: 1px solid var(--calendar-border);
+      background: var(--card-bg);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .calendar-cell:last-child {
+      border-right: none;
+    }
+
+    .calendar-cell:hover {
+      background: var(--card-hover);
+    }
+
+    .booking-block {
+      background: var(--booking-upcoming);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8em;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .booking-block:hover {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .booking-block.active {
+      background: var(--booking-active);
+    }
+
+    .booking-block.past {
+      background: var(--booking-past);
+    }
+
+    .booking-block.pending {
+      background: var(--booking-pending);
+    }
+
+    .booking-block.approved {
+      background: var(--booking-approved);
+    }
+
+    .booking-time {
+      font-size: 0.7em;
+      opacity: 0.9;
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+      background: var(--form-bg);
+      border-top: 2px solid var(--form-border);
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9em;
+      color: var(--text-primary);
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+
+    .legend-color.active {
+      background: var(--booking-active);
+    }
+
+    .legend-color.upcoming {
+      background: var(--booking-upcoming);
+    }
+
+    .legend-color.past {
+      background: var(--booking-past);
+    }
+
+    .legend-color.pending {
+      background: var(--booking-pending);
+    }
+
+    .legend-color.approved {
+      background: var(--booking-approved);
+    }
+
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+    }
+
+    .popup-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .popup-modal {
+      background: var(--container-bg);
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      transform: scale(0.7) translateY(-20px);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .popup-overlay.show .popup-modal {
+      transform: scale(1) translateY(0);
+    }
+
+    .popup-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 1.5em;
+      color: var(--text-secondary);
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .popup-close:hover {
+      background: rgba(0, 0, 0, 0.1);
+      color: var(--text-primary);
+    }
+
+    .booking-details {
+      color: var(--text-primary);
+    }
+
+    .booking-details h3 {
+      margin-bottom: 15px;
+      color: var(--accent-color);
+      font-size: 1.3em;
+    }
+
+    .booking-details p {
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+
+    .booking-details strong {
+      color: var(--text-primary);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8em;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-left: 10px;
+    }
+
+    .status-active {
+      background: var(--booking-active);
+      color: white;
+    }
+
+    .status-upcoming {
+      background: var(--booking-upcoming);
+      color: #333;
+    }
+
+    .status-past {
+      background: var(--booking-past);
+      color: white;
+    }
+
+    .status-pending {
+      background: var(--booking-pending);
+      color: white;
+    }
+
+    .status-approved {
+      background: var(--booking-approved);
+      color: white;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+      font-size: 1.1em;
+    }
+
+    .empty-state-icon {
+      font-size: 3em;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+      }
+
+      .view-controls {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .date-navigation {
+        justify-content: center;
+      }
+
+      .calendar-grid {
+        grid-template-columns: 150px 1fr;
+      }
+
+      .rooms-header,
+      .room-row {
+        padding: 10px;
+      }
+
+      .room-name {
+        font-size: 0.9em;
+      }
+
+      .room-capacity {
+        font-size: 0.7em;
+      }
+
+      .date-cell {
+        min-width: 100px;
+        padding: 10px 5px;
+        font-size: 0.8em;
+      }
+
+      .calendar-cell {
+        min-width: 100px;
+        padding: 4px;
+      }
+
+      .booking-block {
+        font-size: 0.7em;
+        padding: 2px 4px;
+      }
+
+      .legend {
+        gap: 10px;
+      }
+
+      .legend-item {
+        font-size: 0.8em;
+      }
+
+      .current-period {
+        font-size: 1.1em;
+        min-width: 150px;
+      }
+
+      .header h1 {
+        font-size: 2em;
+      }
+
+      .back-btn,
+      .theme-toggle {
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
+        margin: 10px 0;
+      }
+
+      .header {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="javascript:history.back()" class="back-btn">
+        <span>←</span>
+        <span>Kembali</span>
+      </a>
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <span id="theme-text">🌙 Dark Mode</span>
+      </button>
+      <h1>📅 Calendar View</h1>
+      <p>Lihat jadwal booking ruangan dalam bentuk kalender</p>
+    </div>
+
+    <div class="controls">
+      <div class="view-controls">
+        <button class="view-btn active" data-view="daily" onclick="changeView('daily')">
+          <span>📅</span>
+          <span>Harian</span>
+        </button>
+        <button class="view-btn" data-view="weekly" onclick="changeView('weekly')">
+          <span>📊</span>
+          <span>Mingguan</span>
+        </button>
+        <button class="view-btn" data-view="monthly" onclick="changeView('monthly')">
+          <span>🗓️</span>
+          <span>Bulanan</span>
+        </button>
+        <button class="view-btn" data-view="yearly" onclick="changeView('yearly')">
+          <span>📆</span>
+          <span>Tahunan</span>
+        </button>
+      </div>
+
+      <div class="date-navigation">
+        <button class="nav-btn" onclick="navigateDate(-1)">‹</button>
+        <div class="current-period" id="currentPeriod">Hari Ini</div>
+        <button class="nav-btn" onclick="navigateDate(1)">›</button>
+        <button class="today-btn" onclick="goToToday()">Hari Ini</button>
+      </div>
+    </div>
+
+    <div class="calendar-container">
+      <div class="calendar-grid">
+        <div class="rooms-header">
+          <span>🏢 Ruangan</span>
+        </div>
+        <div class="dates-header" id="datesHeader">
+          <!-- Dates will be populated by JavaScript -->
+        </div>
+        <div class="rooms-column" id="roomsColumn">
+          <!-- Rooms will be populated by JavaScript -->
+        </div>
+        <div class="calendar-body" id="calendarBody">
+          <!-- Calendar cells will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-color active"></div>
+        <span>Sedang Berlangsung</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color upcoming"></div>
+        <span>Akan Datang</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color past"></div>
+        <span>Selesai</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color pending"></div>
+        <span>Pending</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color approved"></div>
+        <span>Disetujui</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let currentView = 'daily';
+    let currentDate = new Date();
+    let bookings = [];
+
+    // Sample data - in real app, this would come from the same source as index.html
+    const sampleBookings = [
+      {
+        id: 1,
+        nama: "John Doe",
+        majelis: "Majelis Pendidikan",
+        phone: "+62812345678",
+        tanggalMulai: "2024-01-15",
+        tanggalSelesai: "2024-01-15",
+        waktuMulai: "09:00",
+        waktuSelesai: "11:00",
+        ruangan: "ruang-a",
+        saranaPendukung: ["TV", "Proyektor"],
+        saranaLainnya: "",
+        agenda: "Rapat Koordinasi Bulanan",
+        approvalStatus: "approved",
+        createdAt: "2024-01-10T10:00:00Z"
+      },
+      {
+        id: 2,
+        nama: "Jane Smith",
+        majelis: "Majelis Peduli",
+        phone: "+62812345679",
+        tanggalMulai: "2024-01-15",
+        tanggalSelesai: "2024-01-15",
+        waktuMulai: "14:00",
+        waktuSelesai: "16:00",
+        ruangan: "ruang-b",
+        saranaPendukung: ["WiFi", "AC"],
+        saranaLainnya: "",
+        agenda: "Pelatihan Volunteer",
+        approvalStatus: "pending",
+        createdAt: "2024-01-12T15:30:00Z"
+      },
+      {
+        id: 3,
+        nama: "Ahmad Rahman",
+        majelis: "Majelis Pendidikan",
+        phone: "+62812345680",
+        tanggalMulai: "2024-01-16",
+        tanggalSelesai: "2024-01-16",
+        waktuMulai: "10:00",
+        waktuSelesai: "12:00",
+        ruangan: "common-1",
+        saranaPendukung: ["Sound System", "Konsumsi"],
+        saranaLainnya: "Dekorasi",
+        agenda: "Seminar Pendidikan",
+        approvalStatus: "approved",
+        createdAt: "2024-01-13T09:15:00Z"
+      },
+      {
+        id: 4,
+        nama: "Siti Nurhaliza",
+        majelis: "Majelis Peduli",
+        phone: "+62812345681",
+        tanggalMulai: "2024-01-17",
+        tanggalSelesai: "2024-01-17",
+        waktuMulai: "08:00",
+        waktuSelesai: "10:00",
+        ruangan: "ruang-c",
+        saranaPendukung: ["Papan Tulis", "Flipchart"],
+        saranaLainnya: "",
+        agenda: "Workshop Kreativitas",
+        approvalStatus: "pending",
+        createdAt: "2024-01-14T11:45:00Z"
+      }
+    ];
+
+    // Room data
+    const rooms = [
+      { id: "ruang-a", name: "Ruang A", capacity: 12, type: "Dengan Kursi", icon: "🪑" },
+      { id: "ruang-b", name: "Ruang B", capacity: 8, type: "Dengan Kursi", icon: "🪑" },
+      { id: "ruang-c", name: "Ruang C", capacity: 12, type: "Dengan Kursi", icon: "🪑" },
+      { id: "common-1", name: "Common Room 1", capacity: 30, type: "Tanpa Kursi", icon: "🏛️" },
+      { id: "common-2", name: "Common Room 2", capacity: 20, type: "Tanpa Kursi", icon: "🏛️" }
+    ];
+
+    const majelisList = {
+      "majelis-pendidikan": "Majelis Pendidikan",
+      "majelis-peduli": "Majelis Peduli"
+    };
+
+    // Initialize app
+    function initializeApp() {
+      // Load bookings from localStorage if available
+      const savedBookings = localStorage.getItem('bookings');
+      if (savedBookings) {
+        bookings = JSON.parse(savedBookings);
+      } else {
+        bookings = sampleBookings;
+      }
+
+      // Set default theme
+      document.documentElement.setAttribute("data-theme", "light");
+      
+      // Load saved theme
+      const savedTheme = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+      const themeText = document.getElementById("theme-text");
+      themeText.textContent = savedTheme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
+
+      // Initial render
+      renderCalendar();
+    }
+
+    // Theme toggle
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      const themeText = document.getElementById("theme-text");
+
+      document.documentElement.setAttribute("data-theme", newTheme);
+      themeText.textContent = newTheme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
+      localStorage.setItem("theme", newTheme);
+    }
+
+    // Change view
+    function changeView(view) {
+      currentView = view;
+      
+      // Update active button
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.querySelector(`[data-view="${view}"]`).classList.add('active');
+      
+      renderCalendar();
+    }
+
+    // Navigate date
+    function navigateDate(direction) {
+      const today = new Date();
+      
+      switch(currentView) {
+        case 'daily':
+          currentDate.setDate(currentDate.getDate() + direction);
+          break;
+        case 'weekly':
+          currentDate.setDate(currentDate.getDate() + (direction * 7));
+          break;
+        case 'monthly':
+          currentDate.setMonth(currentDate.getMonth() + direction);
+          break;
+        case 'yearly':
+          currentDate.setFullYear(currentDate.getFullYear() + direction);
+          break;
+      }
+      
+      renderCalendar();
+    }
+
+    // Go to today
+    function goToToday() {
+      currentDate = new Date();
+      renderCalendar();
+    }
+
+    // Get date range based on view
+    function getDateRange() {
+      const startDate = new Date(currentDate);
+      const endDate = new Date(currentDate);
+      
+      switch(currentView) {
+        case 'daily':
+          // Single day
+          break;
+        case 'weekly':
+          // Get start of week (Monday)
+          const dayOfWeek = startDate.getDay();
+          const diff = startDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+          startDate.setDate(diff);
+          endDate.setDate(startDate.getDate() + 6);
+          break;
+        case 'monthly':
+          // Get start and end of month
+          startDate.setDate(1);
+          endDate.setMonth(endDate.getMonth() + 1);
+          endDate.setDate(0);
+          break;
+        case 'yearly':
+          // Get start and end of year
+          startDate.setMonth(0, 1);
+          endDate.setMonth(11, 31);
+          break;
+      }
+      
+      return { startDate, endDate };
+    }
+
+    // Generate dates array
+    function generateDates() {
+      const { startDate, endDate } = getDateRange();
+      const dates = [];
+      const current = new Date(startDate);
+      
+      if (currentView === 'yearly') {
+        // For yearly view, show months
+        for (let month = 0; month < 12; month++) {
+          const date = new Date(currentDate.getFullYear(), month, 1);
+          dates.push(date);
+        }
+      } else {
+        // For other views, show days
+        while (current <= endDate) {
+          dates.push(new Date(current));
+          current.setDate(current.getDate() + 1);
+        }
+      }
+      
+      return dates;
+    }
+
+    // Format date based on view
+    function formatDate(date) {
+      const today = new Date();
+      const isToday = date.toDateString() === today.toDateString();
+      
+      switch(currentView) {
+        case 'daily':
+          return {
+            main: date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' }),
+            sub: date.toLocaleDateString('id-ID', { year: 'numeric' }),
+            isToday
+          };
+        case 'weekly':
+          return {
+            main: date.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' }),
+            sub: date.toLocaleDateString('id-ID', { month: 'short' }),
+            isToday
+          };
+        case 'monthly':
+          return {
+            main: date.getDate().toString(),
+            sub: date.toLocaleDateString('id-ID', { weekday: 'short' }),
+            isToday
+          };
+        case 'yearly':
+          return {
+            main: date.toLocaleDateString('id-ID', { month: 'long' }),
+            sub: date.toLocaleDateString('id-ID', { year: 'numeric' }),
+            isToday: date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()
+          };
+      }
+    }
+
+    // Get current period text
+    function getCurrentPeriodText() {
+      const { startDate, endDate } = getDateRange();
+      
+      switch(currentView) {
+        case 'daily':
+          return currentDate.toLocaleDateString('id-ID', { 
+            weekday: 'long', 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+          });
+        case 'weekly':
+          return `${startDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} - ${endDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+        case 'monthly':
+          return currentDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+        case 'yearly':
+          return currentDate.getFullYear().toString();
+      }
+    }
+
+    // Get bookings for a specific date and room
+    function getBookingsForDateAndRoom(date, roomId) {
+      return bookings.filter(booking => {
+        const bookingDate = new Date(booking.tanggalMulai);
+        
+        if (currentView === 'yearly') {
+          // For yearly view, check if booking is in the same month
+          return bookingDate.getMonth() === date.getMonth() && 
+                 bookingDate.getFullYear() === date.getFullYear() && 
+                 booking.ruangan === roomId;
+        } else {
+          // For other views, check exact date
+          return bookingDate.toDateString() === date.toDateString() && 
+                 booking.ruangan === roomId;
+        }
+      });
+    }
+
+    // Get booking status
+    function getBookingStatus(booking) {
+      const now = new Date();
+      const bookingStart = new Date(booking.tanggalMulai + "T" + booking.waktuMulai);
+      const bookingEnd = new Date(booking.tanggalSelesai + "T" + booking.waktuSelesai);
+      
+      if (booking.approvalStatus === 'pending') {
+        return 'pending';
+      } else if (booking.approvalStatus === 'approved') {
+        if (now >= bookingStart && now <= bookingEnd) {
+          return 'active';
+        } else if (now > bookingEnd) {
+          return 'past';
+        } else {
+          return 'approved';
+        }
+      } else {
+        return 'upcoming';
+      }
+    }
+
+    // Show booking details
+    function showBookingDetails(booking) {
+      const roomName = rooms.find(r => r.id === booking.ruangan)?.name || booking.ruangan;
+      const majelisName = majelisList[booking.majelis] || booking.majelis;
+      const status = getBookingStatus(booking);
+      const statusText = {
+        'active': 'Sedang Berlangsung',
+        'upcoming': 'Akan Datang',
+        'past': 'Selesai',
+        'pending': 'Pending',
+        'approved': 'Disetujui'
+      };
+      
+      const saranaPendukung = booking.saranaPendukung.length > 0 ? booking.saranaPendukung.join(", ") : "Tidak ada";
+      const saranaLainnya = booking.saranaLainnya ? booking.saranaLainnya : "";
+      const allSarana = saranaLainnya
+        ? saranaPendukung === "Tidak ada"
+          ? saranaLainnya
+          : saranaPendukung + ", " + saranaLainnya
+        : saranaPendukung;
+
+      const overlay = document.createElement('div');
+      overlay.className = 'popup-overlay';
+      overlay.innerHTML = `
+        <div class="popup-modal">
+          <button class="popup-close" onclick="closePopup()">&times;</button>
+          <div class="booking-details">
+            <h3>${roomName} <span class="status-badge status-${status}">${statusText[status]}</span></h3>
+            <p><strong>Nama:</strong> ${booking.nama}</p>
+            <p><strong>Majelis:</strong> ${majelisName}</p>
+            <p><strong>Telepon:</strong> ${booking.phone}</p>
+            <p><strong>Tanggal:</strong> ${formatDateLong(booking.tanggalMulai)}</p>
+            <p><strong>Waktu:</strong> ${booking.waktuMulai} - ${booking.waktuSelesai}</p>
+            <p><strong>Sarana:</strong> ${allSarana}</p>
+            <p><strong>Agenda:</strong> ${booking.agenda}</p>
+            <p><strong>Dibuat:</strong> ${formatDateLong(booking.createdAt.split('T')[0])}</p>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+      setTimeout(() => overlay.classList.add('show'), 10);
+
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closePopup();
+      });
+    }
+
+    // Close popup
+    function closePopup() {
+      const popup = document.querySelector('.popup-overlay');
+      if (popup) {
+        popup.classList.remove('show');
+        setTimeout(() => popup.remove(), 300);
+      }
+    }
+
+    // Format date long
+    function formatDateLong(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("id-ID", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    }
+
+    // Render calendar
+    function renderCalendar() {
+      const dates = generateDates();
+      const datesHeader = document.getElementById('datesHeader');
+      const roomsColumn = document.getElementById('roomsColumn');
+      const calendarBody = document.getElementById('calendarBody');
+      const currentPeriod = document.getElementById('currentPeriod');
+      
+      // Update current period text
+      currentPeriod.textContent = getCurrentPeriodText();
+      
+      // Clear existing content
+      datesHeader.innerHTML = '';
+      roomsColumn.innerHTML = '';
+      calendarBody.innerHTML = '';
+      
+      // Render dates header
+      dates.forEach(date => {
+        const dateCell = document.createElement('div');
+        dateCell.className = 'date-cell';
+        const formattedDate = formatDate(date);
+        
+        if (formattedDate.isToday) {
+          dateCell.classList.add('today');
+        }
+        
+        dateCell.innerHTML = `
+          <div>${formattedDate.main}</div>
+          <div style="font-size: 0.8em; opacity: 0.8;">${formattedDate.sub}</div>
+        `;
+        datesHeader.appendChild(dateCell);
+      });
+      
+      // Render rooms and calendar rows
+      rooms.forEach(room => {
+        // Room row
+        const roomRow = document.createElement('div');
+        roomRow.className = 'room-row';
+        roomRow.innerHTML = `
+          <div class="room-icon">${room.icon}</div>
+          <div class="room-info">
+            <div class="room-name">${room.name}</div>
+            <div class="room-capacity">${room.capacity} orang • ${room.type}</div>
+          </div>
+        `;
+        roomsColumn.appendChild(roomRow);
+        
+        // Calendar row for this room
+        const calendarRow = document.createElement('div');
+        calendarRow.className = 'calendar-row';
+        
+        dates.forEach(date => {
+          const calendarCell = document.createElement('div');
+          calendarCell.className = 'calendar-cell';
+          
+          const roomBookings = getBookingsForDateAndRoom(date, room.id);
+          
+          if (roomBookings.length === 0) {
+            calendarCell.innerHTML = '<div style="color: #ccc; font-size: 0.8em; text-align: center; padding: 10px;">Kosong</div>';
+          } else {
+            roomBookings.forEach(booking => {
+              const bookingBlock = document.createElement('div');
+              bookingBlock.className = `booking-block ${getBookingStatus(booking)}`;
+              bookingBlock.innerHTML = `
+                <div>${booking.nama}</div>
+                <div class="booking-time">${booking.waktuMulai} - ${booking.waktuSelesai}</div>
+              `;
+              bookingBlock.addEventListener('click', () => showBookingDetails(booking));
+              calendarCell.appendChild(bookingBlock);
+            });
+          }
+          
+          calendarRow.appendChild(calendarCell);
+        });
+        
+        calendarBody.appendChild(calendarRow);
+      });
+      
+      // Show empty state if no bookings
+      if (bookings.length === 0) {
+        calendarBody.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📅</div>
+            <div>Belum ada booking yang tersedia</div>
+            <div style="font-size: 0.9em; margin-top: 10px;">
+              <a href="javascript:history.back()" style="color: var(--accent-color);">Buat booking pertama</a>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // Initialize when DOM is loaded
+    document.addEventListener("DOMContentLoaded", initializeApp);
+
+    // Listen for storage changes (when bookings are updated from index.html)
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'bookings') {
+        bookings = JSON.parse(e.newValue || '[]');
+        renderCalendar();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1091,6 +1091,12 @@
             <h3 id="todayBookings">0</h3>
             <p>Hari Ini</p>
           </div>
+          <div class="stat-card">
+            <a href="calendar.html" style="text-decoration: none; color: inherit;">
+              <h3 style="font-size: 1.5em;">📅</h3>
+              <p>Calendar View</p>
+            </a>
+          </div>
         </div>
 
         <div id="bookingsList"></div>
@@ -1241,6 +1247,9 @@
 
       // Add to bookings array
       bookings.push(booking);
+      
+      // Save to localStorage
+      saveBookings();
 
       // Reset form
       document.getElementById("bookingForm").reset();
@@ -1396,6 +1405,7 @@
     // Confirm delete
     function confirmDelete(id) {
       bookings = bookings.filter((b) => b.id !== id);
+      saveBookings();
       renderBookings();
       updateStats();
       closePopup();
@@ -1480,8 +1490,24 @@
       }
     }
 
+    // Save bookings to localStorage
+    function saveBookings() {
+      localStorage.setItem('bookings', JSON.stringify(bookings));
+    }
+
+    // Load bookings from localStorage
+    function loadBookings() {
+      const savedBookings = localStorage.getItem('bookings');
+      if (savedBookings) {
+        bookings = JSON.parse(savedBookings);
+      }
+    }
+
     // Initialize when DOM is loaded
-    document.addEventListener("DOMContentLoaded", initializeApp);
+    document.addEventListener("DOMContentLoaded", function() {
+      loadBookings();
+      initializeApp();
+    });
   </script>
 </body>
 </html>
